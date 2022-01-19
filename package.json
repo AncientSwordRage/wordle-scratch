@@ -1,0 +1,15 @@
+{
+  "name": "wordle-scratch-pad",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "noodle": "node index.js"
+  },
+  "keywords": [
+    "wordle"
+  ],
+  "author": "",
+  "license": "Creative Commons"
+}
