@@ -1,26 +1,44 @@
+/* eslint-disable no-restricted-syntax */
 const { wordles, candidates } = require('./wordle.const');
+const {
+  findPattern,
+  formatLogs, smooshToLimit, reduceGen, factorialCached, createPoly, polynomialMultiplication,
+} = require('./utils');
+
 const start = new Date();
-const rowPatterns = []
+const totalRows = 6;
 
-const patternBank = new Set();
-let previousBankSize = patternBank.size;
-wordles.forEach((word, index) => {
-    const pattern = candidates.flatMap(candidate => findPattern(word, candidate));
-    patternBank.add(...pattern)
-    console.log(`prev: ${previousBankSize}, now ${patternBank.size}, ${index}`);
-    previousBankSize = patternBank.size;
-})
-const end = new Date();
-console.log(`${patternBank.size} total patterns in ${(end.getTime() - start.getTime()) / 1000}`);
-console.log(patternBank);
+const uniquePatterns = new Set();
+let previousBankSize = uniquePatterns.size;
 
-function findPattern(word, candidate) {
-    const indexes = [0, 1, 2, 3, 4, 5];
-    const toColour = (idx) => {
-        if (word[idx] === candidate[idx]) return 'green';
-        else if (candidate.includes(word[idx])) return 'orange';
-        return 'black';
-    }
-    return indexes.map(idx => toColour(idx)).join(',');
+const factorial = factorialCached();
 
-}
+wordles.map((word, index) => {
+  previousBankSize = uniquePatterns.size;
+  const patterns = candidates.flatMap((candidate) => findPattern(word, candidate));
+  // filter to max number of combos - 6
+  const patternSmoosh = smooshToLimit(patterns, totalRows);
+  const polynomials = [];
+  for (const pattern of patternSmoosh.values()) {
+    polynomials.push(createPoly(pattern.count, factorial));
+  }
+  const sixthOrderLimitedPoly = Object.assign([], polynomialMultiplication(polynomials, totalRows));
+  console.log(word, sixthOrderLimitedPoly[totalRows] * factorial(6));
+  const smooshCount = (/** @type {number} */ +reduceGen(
+    patternSmoosh.values(),
+    (sum, { count }) => sum + count,
+    0,
+  ));
+  // console.log(`Smooshed ${patterns.length} array elements to size ${smooshCount} of up to 6 unique`);
+  patterns.forEach(uniquePatterns.add, uniquePatterns);
+  const patternsAdded = uniquePatterns.size - previousBankSize;
+  if (patternsAdded) console.log(`# of patterns added: ${patternsAdded}`);
+  const message = `words #${index.toString(10).padStart(4, '0')}: ${word} has ${patternSmoosh.size} unique patterns, ${smooshCount} total`;
+  return {
+    word, patterns, patternSmoosh, smooshCount, message,
+  };
+}).sort((a, b) => {
+  const uniqueCount = a.patternSmoosh.size - b.patternSmoosh.size;
+  return uniqueCount === 0 ? a.smooshCount - a.smooshCount : uniqueCount;
+}).forEach((word) => console.log(word.message));
+console.log(formatLogs(uniquePatterns.size, start));

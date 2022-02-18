@@ -5,11 +5,24 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "noodle": "node index.js"
+    "noodle": "node index.js",
+    "demo": "node demo.js",
+    "lint": "eslint **/*.js"
   },
   "keywords": [
     "wordle"
   ],
   "author": "",
-  "license": "Creative Commons"
+  "license": "Creative Commons",
+  "dependencies": {
+    "date-fns": "^2.28.0",
+    "itertools": "^1.7.1",
+    "lzutf8": "^0.6.0",
+    "ternary-search-tree": "^1.0.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.9.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4"
+  }
 }
